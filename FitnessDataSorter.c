@@ -27,6 +27,21 @@ void tokeniseRecord(char *record, char delimiter, char *date, char *time, int *s
 
 
 int main() {
-    
+    int buffer_size = 512;
+    char line[buffer_size];
+    char filename[buffer_size];
+    printf("Input filename: ");
+    fgets(line, buffer_size, stdin);
+    sscanf(line, " %s ", filename);
+    FILE *input = fopen(filename, "r"); 
+                
+
+    if (input == NULL){
+        printf("Error: Could not find or open the file.\n");
+        return 1;
+    } 
+    else {
+        printf("File successfully loaded.\n");
+    }
     
 }
