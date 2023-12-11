@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LINE_LENGTH 100
+#define buffer_size 512
 
 typedef struct {
     char date[11];
@@ -12,7 +12,18 @@ typedef struct {
 
 // Comparison function for qsort
 int compareStepCounts(const void *a, const void *b) {
-    return ((FitnessData *)b)->steps - ((FitnessData *)a)->steps;
+    int compareStepsDescending(const void *a, const void *b) {
+    int stepsA = ((FitnessData *)a)->steps;
+    int stepsB = ((FitnessData *)b)->steps;
+
+    if (stepsA < stepsB) {
+        return 1;  // Return 1 for descending order
+    } else if (stepsA > stepsB) {
+        return -1; // Return -1 for descending order
+    } else {
+        return 0;  // Return 0 for equal steps
+    }
+}
 }
 
 void tokeniseRecord(char *record, char delimiter, FitnessData *fitnessData) {
@@ -30,20 +41,20 @@ void tokeniseRecord(char *record, char delimiter, FitnessData *fitnessData) {
     }
 }
 
-void readCSV(const char *filename, FitnessData **fitnessData, size_t *numEntries) {
-    FILE *file = fopen(filename, "r");
-    if (!file) {
+void readCSV(char *filename, FitnessData **fitnessData, size_t *numEntries) {
+    FILE *input = fopen(filename, "r");
+    if (!input) {
         perror("Error opening file");
         exit(EXIT_FAILURE);
     }
 
-    char line[MAX_LINE_LENGTH];
+    char line[buffer_size];
 
     *numEntries = 0;
     size_t capacity = 10;  // Initial capacity, adjust as needed
     *fitnessData = malloc(capacity * sizeof(FitnessData));
 
-    while (fgets(line, MAX_LINE_LENGTH, file) != NULL) {
+    while (fgets(line, buffer_size, input) != NULL) {
         if (*numEntries == capacity) {
             // Increase capacity if needed
             capacity *= 2;
@@ -59,39 +70,36 @@ void readCSV(const char *filename, FitnessData **fitnessData, size_t *numEntries
         (*numEntries)++;
     }
 
-    fclose(file);
+    fclose(input);
 }
 
 void writeCSV(const char *filename, FitnessData *fitnessData, size_t numEntries) {
-    FILE *file = fopen(filename, "w");
-    if (!file) {
+    FILE *input = fopen(filename, "w");
+    if (!input) {
         perror("Error opening file");
         exit(EXIT_FAILURE);
     }
 
     for (size_t i = 0; i < numEntries; ++i) {
-        fprintf(file, "%s,%s,%d\n", fitnessData[i].date, fitnessData[i].time, fitnessData[i].steps);
+        fprintf(input, "%s\t%s\t%d\n", fitnessData[i].date, fitnessData[i].time, fitnessData[i].steps);
     }
 
-    fclose(file);
+    fclose(input);
 }
 
 int main() {
-    int buffer_size = 512;
+    
+    char filename[buffer_size];
     char *inputFilename;
+    char *outputFilename;
     printf("Input filename: ");
     
-    fgets(line, buffer_size, stdin);
-    sscanf(line, " %s ", filename);
-    FILE *input = fopen(inputFilename, "r"); 
+    
+    
                 
 
-    if (input == NULL)
-    {
-        printf("Error: Could not find or open the file.\n");
-        return 1;          
-    } 
-    const char *outputFilename = "sorted_output_file.csv";
+   
+    snprintf(outputFilename, sizeof(outputFilename), "%s.tsv", inputFilename);
 
     FitnessData *fitnessData;
     size_t numEntries;
