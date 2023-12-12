@@ -24,7 +24,15 @@ void tokeniseRecord(char *record, char delimiter, char *date, char *time, int *s
         }
     }
 }
+// comparision function to use in qsort
+int compareStepsDescending(const void *a, const void *b) {
+    int stepsA = ((FitnessData *)a)->steps; // for accessing steps in FitnessData struct
+    int stepsB = ((FitnessData *)b)->steps;
 
+    if (stepsA < stepsB) return 1; //will return true for descending order
+    if (stepsA > stepsB) return -1; // will return false for descending order
+    return 0; // will return 0 if they were equal
+}
 
 int main() {
     int buffer_size = 512;
@@ -32,7 +40,10 @@ int main() {
     char filename[buffer_size];
     printf("Input filename: ");
     fgets(line, buffer_size, stdin);
+
     sscanf(line, " %s ", filename);
+    
+   
     FILE *input = fopen(filename, "r"); 
                 
 
@@ -43,5 +54,40 @@ int main() {
     else {
         printf("File successfully loaded.\n");
     }
+    strcat(filename, ".tsv");// concatenating the input filename string with .tsv to have an output filename
     
+    FILE *output = fopen(filename, "w");
+    if (output == NULL){
+        fclose(input);
+        printf("Error: Could not find or open the file.\n");
+        return 1;
+    }
+    
+    FitnessData fitnessDataArray[buffer_size];
+    int numEntries = 0;
+    
+    fgets(line, buffer_size, input);
+    
+    
+    while (fgets(line, buffer_size, input) != NULL) {
+        
+        tokeniseRecord(line, ',', fitnessDataArray[numEntries].date,
+        fitnessDataArray[numEntries].time, &fitnessDataArray[numEntries].steps);
+        numEntries++;
+    }
+    //qsort for sorting the fitnessDataArray based on steps
+    qsort(fitnessDataArray, numEntries, sizeof(FitnessData), compareStepsDescending);
+    for (int i = 0; i < numEntries; ++i) {
+        fprintf(output, "%s\t%s\t%d\n", fitnessDataArray[i].date, 
+            fitnessDataArray[i].time, fitnessDataArray[i].steps);
+    }
+    fclose(input);
+    fclose(output);
+
+    
+    
+
+    printf("Data sorted and written to %s\n", filename);
+    
+    return 0;
 }

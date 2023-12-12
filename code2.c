@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LINE_LENGTH 100
+#define buffer_size 512
 
 typedef struct {
     char date[11];
@@ -11,16 +11,16 @@ typedef struct {
 } FitnessData;
 
 // Function to tokenize a record
-void tokeniseRecord(char *record, char delimiter, FitnessData *fitnessData) {
+void tokeniseRecord(char *record, char delimiter, char *date, char *time, int *steps) {
     char *ptr = strtok(record, &delimiter);
     if (ptr != NULL) {
-        strcpy(fitnessData->date, ptr);
+        strcpy(date, ptr);
         ptr = strtok(NULL, &delimiter);
         if (ptr != NULL) {
-            strcpy(fitnessData->time, ptr);
+            strcpy(time, ptr);
             ptr = strtok(NULL, &delimiter);
             if (ptr != NULL) {
-                fitnessData->steps = atoi(ptr);
+                *steps = atoi(ptr);
             }
         }
     }
@@ -28,15 +28,24 @@ void tokeniseRecord(char *record, char delimiter, FitnessData *fitnessData) {
 
 // Comparison function for qsort
 int compareStepsDescending(const void *a, const void *b) {
-    return ((FitnessData *)b)->steps - ((FitnessData *)a)->steps;
+    int stepsA = ((FitnessData *)a)->steps;
+    int stepsB = ((FitnessData *)b)->steps;
+
+    if (stepsA < stepsB) return 1;
+    if (stepsA > stepsB) return -1;
+    return 0;
 }
 
-void convertCSVtoTSVSorted(const char *inputFilename, const char *outputFilename) {
+// Function to convert CSV to TSV and sort steps
+void convertCSVtoTSVAndSort(const char *inputFilename) {
     FILE *inputFile = fopen(inputFilename, "r");
     if (!inputFile) {
         perror("Error opening input file");
         exit(EXIT_FAILURE);
     }
+
+    char outputFilename[buffer_size + 4];  // Maximum additional characters: ".tsv"
+    snprintf(outputFilename, sizeof(outputFilename), "%s.tsv", inputFilename);
 
     FILE *outputFile = fopen(outputFilename, "w");
     if (!outputFile) {
@@ -45,25 +54,18 @@ void convertCSVtoTSVSorted(const char *inputFilename, const char *outputFilename
         exit(EXIT_FAILURE);
     }
 
-    char line[MAX_LINE_LENGTH];
+    char line[buffer_size];
     FitnessData *fitnessDataArray = NULL;
-    size_t numEntries = 0;
+    int numEntries = 0;
     size_t capacity = 0;
 
     // Read the CSV file and tokenize the records
-    while (fgets(line, MAX_LINE_LENGTH, inputFile) != NULL) {
-        if (numEntries == capacity) {
-            // Increase capacity if needed
-            capacity = (capacity == 0) ? 10 : capacity * 2;
-            fitnessDataArray = realloc(fitnessDataArray, capacity * sizeof(FitnessData));
-            if (!fitnessDataArray) {
-                perror("Memory allocation error");
-                exit(EXIT_FAILURE);
-            }
-        }
+    while (fgets(line, buffer_size, inputFile) != NULL) {
+        
 
         // Tokenize the record
-        tokeniseRecord(line, ',', &fitnessDataArray[numEntries]);
+        tokeniseRecord(line, ',', fitnessDataArray[numEntries].date,
+         fitnessDataArray[numEntries].time, &fitnessDataArray[numEntries].steps );
 
         numEntries++;
     }
@@ -74,19 +76,21 @@ void convertCSVtoTSVSorted(const char *inputFilename, const char *outputFilename
     qsort(fitnessDataArray, numEntries, sizeof(FitnessData), compareStepsDescending);
 
     // Write the sorted data to the output TSV file
-    for (size_t i = 0; i < numEntries; ++i) {
-        fprintf(outputFile, "%s\t%s\t%d\n", fitnessDataArray[i].date, fitnessDataArray[i].time, fitnessDataArray[i].steps);
+    for (int i = 0; i < numEntries; ++i) {
+        fprintf(outputFile, "%s\t%s\t%d\n", fitnessDataArray[i].date, 
+            fitnessDataArray[i].time, fitnessDataArray[i].steps);
     }
 
     fclose(outputFile);
 
     // Free allocated memory
     free(fitnessDataArray);
+
+    printf("Data sorted and written to %s\n", outputFilename);
 }
 
 int main() {
-    char inputFilename[MAX_LINE_LENGTH];
-    char outputFilename[MAX_LINE_LENGTH + 4];  // Maximum additional characters: ".tsv"
+    char inputFilename[buffer_size];
 
     // Prompt the user for input filename
     printf("Enter the input CSV file name: ");
@@ -95,12 +99,7 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    // Generate output filename by appending ".tsv"
-    snprintf(outputFilename, sizeof(outputFilename), "%s", inputFilename);
-
-    convertCSVtoTSVSorted(inputFilename, outputFilename);
-
-    printf("Conversion and sorting complete. Output file: %s\n", outputFilename);
+    convertCSVtoTSVAndSort(inputFilename);
 
     return 0;
 }
