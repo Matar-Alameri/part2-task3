@@ -33,6 +33,44 @@ int compareStepsDescending(const void *a, const void *b) {
     if (stepsA > stepsB) return -1; // will return false for descending order
     return 0; // will return 0 if they were equal
 }
+int isValidDate(const char *date) {
+    // Check if the date has the expected length
+    if (strlen(date) != 10) {
+        return 0;
+    }
+
+    // Check if the format is "YYYY-MM-DD"
+    if (sscanf(date, "%4d-%2d-%2d", &(int){0}, &(int){0}, &(int){0}) != 3) {
+        return 0;
+    }
+
+    
+
+    return 1; // Valid date
+}
+int isValidTime(const char *time) {
+    // Check if the time has the expected length
+    if (strlen(time) != 5) {
+        return 0;
+    }
+
+    // Check if the format is "HH:MM"
+    if (sscanf(time, "%2d:%2d", &(int){0}, &(int){0}) != 2) {
+        return 0;
+    }
+
+    // Check if hours and minutes are within valid ranges
+    int hours, minutes;
+    if (sscanf(time, "%2d:%2d", &hours, &minutes) == 2) {
+        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+            return 0;
+        }
+    }
+
+    
+
+    return 1; // Valid time
+}
 
 int main() {
     int buffer_size = 512;
@@ -72,7 +110,22 @@ int main() {
         
         tokeniseRecord(line, ',', fitnessDataArray[numEntries].date,
         fitnessDataArray[numEntries].time, &fitnessDataArray[numEntries].steps);
+
+        if (!isValidDate(fitnessDataArray[numEntries].date) ||
+            !isValidTime(fitnessDataArray[numEntries].time) ||
+            fitnessDataArray[numEntries].steps <= 0) {
+            
+            continue; // Skip this entry and move to the next
+        }
+
+        
         numEntries++;
+    }
+    if (numEntries == 0) {
+        
+        fprintf(stderr, "Error: invalid entries found.\n");
+        free(fitnessDataArray);
+        exit(0);
     }
     //qsort for sorting the fitnessDataArray based on steps
     qsort(fitnessDataArray, numEntries, sizeof(FitnessData), compareStepsDescending);
