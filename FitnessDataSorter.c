@@ -38,7 +38,7 @@ int main() {
     int buffer_size = 512;
     char line[buffer_size];
     char filename[buffer_size];
-    printf("Input filename: ");
+    printf("Enter Filename: ");
     fgets(line, buffer_size, stdin);
 
     sscanf(line, " %s ", filename);
