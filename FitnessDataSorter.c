@@ -51,9 +51,7 @@ int main() {
         printf("Error: Could not find or open the file.\n");
         return 1;
     } 
-    else {
-        printf("File successfully loaded.\n");
-    }
+    
     strcat(filename, ".tsv");// concatenating the input filename string with .tsv to have an output filename
     
     FILE *output = fopen(filename, "w");
