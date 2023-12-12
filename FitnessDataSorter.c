@@ -38,6 +38,7 @@ int main() {
     int buffer_size = 512;
     char line[buffer_size];
     char filename[buffer_size];
+    char outputfilename[buffer_size];
     printf("Enter Filename: ");
     fgets(line, buffer_size, stdin);
 
@@ -51,10 +52,10 @@ int main() {
         printf("Error: Could not find or open the file.\n");
         return 1;
     } 
+    strcpy(outputfilename, filename);
+    strcat(outputfilename, ".tsv");// concatenating the input filename string with .tsv to have an output filename
     
-    strcat(filename, ".tsv");// concatenating the input filename string with .tsv to have an output filename
-    
-    FILE *output = fopen(filename, "w");
+    FILE *output = fopen(outputfilename, "w");
     if (output == NULL){
         fclose(input);
         printf("Error: Could not find or open the file.\n");
@@ -85,7 +86,7 @@ int main() {
     
     
 
-    printf("Data sorted and written to %s\n", filename);
+    printf("Data sorted and written to %s\n", outputfilename);
     
     return 0;
 }
