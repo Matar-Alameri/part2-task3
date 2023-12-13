@@ -114,13 +114,14 @@ int main() {
         if (!isValidDate(fitnessDataArray[numEntries].date) ||
             !isValidTime(fitnessDataArray[numEntries].time) ||
             fitnessDataArray[numEntries].steps <= 0) {
-            
-            continue; // Skip this entry and move to the next
+            printf("invalid entries.\n");
+            exit(0); // Skip this entry and move to the next
         }
 
         
         numEntries++;
     }
+    
     if (numEntries == 0) {
         
         fprintf(stderr, "Error: invalid entries found.\n");
@@ -138,7 +139,7 @@ int main() {
 
     
     
-
+    
     printf("Data sorted and written to %s\n", outputfilename);
     
     return 0;
