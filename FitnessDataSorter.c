@@ -36,40 +36,40 @@ int compareStepsDescending(const void *a, const void *b) {
 int isValidDate(const char *date) {
     // Check if the date has the expected length
     if (strlen(date) != 10) {
-        return 0;
+        return 1;
     }
 
     // Check if the format is "YYYY-MM-DD"
     if (sscanf(date, "%4d-%2d-%2d", &(int){0}, &(int){0}, &(int){0}) != 3) {
-        return 0;
+        return 1;
     }
 
     
 
-    return 1; // Valid date
+    return 0; // Valid date
 }
 int isValidTime(const char *time) {
     // Check if the time has the expected length
     if (strlen(time) != 5) {
-        return 0;
+        return 1;
     }
 
     // Check if the format is "HH:MM"
     if (sscanf(time, "%2d:%2d", &(int){0}, &(int){0}) != 2) {
-        return 0;
+        return 1;
     }
 
     // Check if hours and minutes are within valid ranges
     int hours, minutes;
     if (sscanf(time, "%2d:%2d", &hours, &minutes) == 2) {
         if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-            return 0;
+            return 1;
         }
     }
 
     
 
-    return 1; // Valid time
+    return 0; // Valid time
 }
 
 int main() {
@@ -103,7 +103,7 @@ int main() {
     FitnessData fitnessDataArray[buffer_size];
     int numEntries = 0;
     
-    fgets(line, buffer_size, input);
+    
     
     
     while (fgets(line, buffer_size, input) != NULL) {
@@ -115,7 +115,7 @@ int main() {
             !isValidTime(fitnessDataArray[numEntries].time) ||
             fitnessDataArray[numEntries].steps <= 0) {
             printf("invalid entries.\n");
-            exit(0); // Skip this entry and move to the next
+            exit(1); 
         }
 
         
@@ -123,7 +123,6 @@ int main() {
     }
     
     if (numEntries == 0) {
-        
         fprintf(stderr, "Error: invalid entries found.\n");
         free(fitnessDataArray);
         exit(0);
